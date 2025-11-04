@@ -7,44 +7,14 @@ services:
   bot:
     build:
       context: .
-      dockerfile: bot.Dockerfile
+      dockerfile: Dockerfile
     restart: no
     depends_on:
-      - api
       - redis # Wait for the database to be ready before starting the application
     volumes:
       - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
     environment:
       TZ: Europe/Moscow # Set the timezone for correct calendar image generation
-
-  api:
-    build:
-      context: .
-      dockerfile: api.Dockerfile
-    restart: no
-    depends_on:
-      db:
-        condition: service_healthy
-      alembic-migrate:
-        condition: service_completed_successfully
-    ports:
-      - "8001:8000"
-    volumes:
-      - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
-    environment:
-      TZ: Europe/Moscow # Set the timezone for correct calendar image generation
-                        # HEY: isn't it irrelevant comment?
-  alembic-migrate:
-    build:
-      context: .
-      dockerfile: api.Dockerfile
-    restart: no
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
-    command: alembic upgrade head
 
   db:
     # See more: https://hub.docker.com/_/postgres
